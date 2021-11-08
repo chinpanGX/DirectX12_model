@@ -10,10 +10,15 @@ class PMDActor;
 class PMDRenderer
 {
 	friend PMDActor;
-private:
-	Dx12Wrapper& _dx12;
 	template<typename T>
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
+public:
+	PMDRenderer(Dx12Wrapper& dx12);
+	~PMDRenderer();
+	ID3D12PipelineState* GetPipelineState();
+	ID3D12RootSignature* GetRootSignature();
+private:
+	Dx12Wrapper& _wrapper;
 
 	ComPtr< ID3D12PipelineState> _pipeline = nullptr;//PMD用パイプライン
 	ComPtr< ID3D12RootSignature> _rootSignature = nullptr;//PMD用ルートシグネチャ
@@ -34,13 +39,5 @@ private:
 	HRESULT CreateRootSignature();
 
 	bool CheckShaderCompileResult(HRESULT result , ID3DBlob* error=nullptr);
-
-public:
-	PMDRenderer(Dx12Wrapper& dx12);
-	~PMDRenderer();
-	void Update();
-	void Draw();
-	ID3D12PipelineState* GetPipelineState();
-	ID3D12RootSignature* GetRootSignature();
 };
 
