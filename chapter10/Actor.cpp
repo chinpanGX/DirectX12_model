@@ -1,9 +1,15 @@
+/*---------------------------------------------------------------
+
+	[Actor.cpp]
+	Author : 出合翔太
+
+----------------------------------------------------------------*/
 #define _CRT_SECURE_NO_WARNINGS
-#include "PMDActor.h"
-#include"PMDRenderer.h"
-#include"Dx12Wrapper.h"
-#include"d3dx12.h"
-#include<sstream>
+#include "Actor.h"
+#include "Renderer.h"
+#include "Graphics.h"
+#include "d3dx12.h"
+#include <sstream>
 #include <algorithm>
 
 using namespace Microsoft::WRL;
@@ -51,7 +57,7 @@ namespace
 	}
 }
 
-PMDActor::PMDActor(const char* filepath, PMDRenderer& renderer) : _renderer(renderer), _wrapper(renderer._wrapper)
+Actor::Actor(const char* filepath, Renderer& renderer) : _renderer(renderer), _wrapper(renderer._wrapper)
 {
 	_transform.world = XMMatrixIdentity();
 	LoadPMDFile(filepath);
@@ -61,11 +67,11 @@ PMDActor::PMDActor(const char* filepath, PMDRenderer& renderer) : _renderer(rend
 }
 
 
-PMDActor::~PMDActor()
+Actor::~Actor()
 {
 }
 
-void PMDActor::LoadVMDFile(const char* filepath, const char* name) 
+void Actor::LoadVMDFile(const char* filepath, const char* name) 
 {
 	auto fp = fopen(filepath, "rb");
 	fseek(fp, 50, SEEK_SET);//最初の50バイトは飛ばしてOK
@@ -116,12 +122,12 @@ void PMDActor::LoadVMDFile(const char* filepath, const char* name)
 	copy(_boneMatrices.begin(), _boneMatrices.end(), _mappedMatrices + 1);
 }
 
-void PMDActor::Update()
+void Actor::Update()
 {
 	MotionUpdate();
 }
 
-void PMDActor::Draw()
+void Actor::Draw()
 {
 	_wrapper.CommandList()->IASetVertexBuffers(0, 1, &_vbView);
 	_wrapper.CommandList()->IASetIndexBuffer(&_ibView);
@@ -148,18 +154,18 @@ void PMDActor::Draw()
 
 }
 
-void PMDActor::PlayAnimation() 
+void Actor::PlayAnimation() 
 {
 	_startTime = timeGetTime();
 }
 
-void* PMDActor::Transform::operator new(size_t size) 
+void* Actor::Transform::operator new(size_t size) 
 {
 	return _aligned_malloc(size, 16);
 }
 
 // 読み込んだマテリアルからマテリアルバッファを作成
-HRESULT PMDActor::CreateMaterialData()
+HRESULT Actor::CreateMaterialData()
 {
 	//マテリアルバッファを作成
 	auto materialBuffSize = sizeof(MaterialForHlsl);
@@ -192,7 +198,7 @@ HRESULT PMDActor::CreateMaterialData()
 }
 
 // マテリアル＆テクスチャのビューを作成
-HRESULT PMDActor::CreateMaterialAndTextureView() 
+HRESULT Actor::CreateMaterialAndTextureView() 
 {
 	D3D12_DESCRIPTOR_HEAP_DESC materialDescHeapDesc = {};
 	materialDescHeapDesc.NumDescriptors = _materials.size() * 5;//マテリアル数ぶん(定数1つ、テクスチャ3つ)
@@ -276,7 +282,7 @@ HRESULT PMDActor::CreateMaterialAndTextureView()
 }
 
 // 座標変換用ビューの作成
-HRESULT PMDActor::CreateTransformView() 
+HRESULT Actor::CreateTransformView() 
 {
 	//GPUバッファ作成
 	auto buffSize = sizeof(XMMATRIX)*(1 + _boneMatrices.size());
@@ -322,7 +328,7 @@ HRESULT PMDActor::CreateTransformView()
 	return S_OK;
 }
 
-HRESULT PMDActor::LoadPMDFile(const char* path) 
+HRESULT Actor::LoadPMDFile(const char* path) 
 {
 	//PMDヘッダ構造体
 	struct PMDHeader 
@@ -550,7 +556,7 @@ HRESULT PMDActor::LoadPMDFile(const char* path)
 	std::fill(_boneMatrices.begin(), _boneMatrices.end(), XMMatrixIdentity());
 }
 
-void PMDActor::RecursiveMatrixMultipy(BoneNode* node, XMMATRIX mat)
+void Actor::RecursiveMatrixMultipy(BoneNode* node, XMMATRIX mat)
 {
 	_boneMatrices[node->boneIdx] = mat;
 
@@ -560,7 +566,7 @@ void PMDActor::RecursiveMatrixMultipy(BoneNode* node, XMMATRIX mat)
 	}
 }
 
-float PMDActor::GetYFromXOnBezier(float x, const XMFLOAT2& a, const XMFLOAT2& b, uint8_t n)
+float Actor::GetYFromXOnBezier(float x, const XMFLOAT2& a, const XMFLOAT2& b, uint8_t n)
 {
 	if (a.x == a.y&&b.x == b.y) return x;//計算不要
 	float t = x;
@@ -585,7 +591,7 @@ float PMDActor::GetYFromXOnBezier(float x, const XMFLOAT2& a, const XMFLOAT2& b,
 	return t * t*t + 3 * t*t*r*b.y + 3 * t*r*r*a.y;
 }
 
-void PMDActor::MotionUpdate() 
+void Actor::MotionUpdate() 
 {
 	auto elapsedTime = timeGetTime() - _startTime;//経過時間を測る
 	unsigned int frameNo = 30 * (elapsedTime / 1000.0f);

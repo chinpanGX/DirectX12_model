@@ -1,10 +1,16 @@
-#include "PMDRenderer.h"
-#include"d3dx12.h"
-#include<cassert>
-#include<d3dcompiler.h>
-#include"Dx12Wrapper.h"
-#include<string>
-#include<algorithm>
+/*--------------------------------------------------------------
+
+	[Renderer.cpp]
+	Author : 出合翔太
+
+---------------------------------------------------------------*/
+#include "Renderer.h"
+#include "d3dx12.h"
+#include <cassert>
+#include <d3dcompiler.h>
+#include "Graphics.h"
+#include <string>
+#include <algorithm>
 
 using namespace std;
 
@@ -19,7 +25,7 @@ namespace
 	}
 }
 
-PMDRenderer::PMDRenderer(Dx12Wrapper& dx12): _wrapper(dx12)
+Renderer::Renderer(Graphics& graphics): _wrapper(graphics)
 {
 	assert(SUCCEEDED(CreateRootSignature()));
 	assert(SUCCEEDED(CreateGraphicsPipelineForPMD()));
@@ -29,22 +35,22 @@ PMDRenderer::PMDRenderer(Dx12Wrapper& dx12): _wrapper(dx12)
 }
 
 
-PMDRenderer::~PMDRenderer()
+Renderer::~Renderer()
 {
 }
 
 
-ID3D12PipelineState* PMDRenderer::GetPipelineState() 
+ID3D12PipelineState* Renderer::GetPipelineState() 
 {
 	return _pipeline.Get();
 }
 
-ID3D12RootSignature* PMDRenderer::GetRootSignature() 
+ID3D12RootSignature* Renderer::GetRootSignature() 
 {
 	return _rootSignature.Get();
 }
 
-ID3D12Resource*  PMDRenderer::CreateDefaultTexture(size_t width, size_t height)
+ID3D12Resource*  Renderer::CreateDefaultTexture(size_t width, size_t height)
 {
 	auto resDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R8G8B8A8_UNORM, width, height);
 	auto texHeapProp = CD3DX12_HEAP_PROPERTIES(D3D12_CPU_PAGE_PROPERTY_WRITE_BACK, D3D12_MEMORY_POOL_L0);
@@ -58,7 +64,7 @@ ID3D12Resource*  PMDRenderer::CreateDefaultTexture(size_t width, size_t height)
 	return buff;
 }
 
-ID3D12Resource* PMDRenderer::CreateWhiteTexture() 
+ID3D12Resource* Renderer::CreateWhiteTexture() 
 {
 	ID3D12Resource* whiteBuff = CreateDefaultTexture(4,4);	
 	std::vector<unsigned char> data(4 * 4 * 4);
@@ -69,7 +75,7 @@ ID3D12Resource* PMDRenderer::CreateWhiteTexture()
 	return whiteBuff;
 }
 
-ID3D12Resource*	PMDRenderer::CreateBlackTexture() 
+ID3D12Resource*	Renderer::CreateBlackTexture() 
 {
 	ID3D12Resource* blackBuff = CreateDefaultTexture(4, 4);
 	std::vector<unsigned char> data(4 * 4 * 4);
@@ -80,7 +86,7 @@ ID3D12Resource*	PMDRenderer::CreateBlackTexture()
 	return blackBuff;
 }
 
-ID3D12Resource*	PMDRenderer::CreateGrayGradationTexture() 
+ID3D12Resource*	Renderer::CreateGrayGradationTexture() 
 {
 	ID3D12Resource* gradBuff = CreateDefaultTexture(4, 256);
 	//上が白くて下が黒いテクスチャデータを作成
@@ -99,7 +105,7 @@ ID3D12Resource*	PMDRenderer::CreateGrayGradationTexture()
 	return gradBuff;
 }
 
-bool PMDRenderer::CheckShaderCompileResult(HRESULT result, ID3DBlob* error) 
+bool Renderer::CheckShaderCompileResult(HRESULT result, ID3DBlob* error) 
 {
 	if (FAILED(result)) 
 	{
@@ -124,7 +130,7 @@ bool PMDRenderer::CheckShaderCompileResult(HRESULT result, ID3DBlob* error)
 }
 
 //パイプライン初期化
-HRESULT PMDRenderer::CreateGraphicsPipelineForPMD() 
+HRESULT Renderer::CreateGraphicsPipelineForPMD() 
 {
 	ComPtr<ID3DBlob> vsBlob = nullptr;
 	ComPtr<ID3DBlob> psBlob = nullptr;
@@ -192,7 +198,7 @@ HRESULT PMDRenderer::CreateGraphicsPipelineForPMD()
 }
 
 //ルートシグネチャ初期化
-HRESULT  PMDRenderer::CreateRootSignature() 
+HRESULT  Renderer::CreateRootSignature() 
 {
 	//レンジ
 	CD3DX12_DESCRIPTOR_RANGE  descTblRanges[4] = {};//テクスチャと定数の２つ

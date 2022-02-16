@@ -1,24 +1,29 @@
-#pragma once
+/*--------------------------------------------------------------
 
+	[Renderer.h]
+	Author : 出合翔太
+
+---------------------------------------------------------------*/
+#pragma once
 #include<d3d12.h>
 #include<vector>
 #include<wrl.h>
 #include<memory>
 
-class Dx12Wrapper;
-class PMDActor;
-class PMDRenderer
+class Graphics;
+class Actor;
+class Renderer
 {
-	friend PMDActor;
+	friend Actor;
 	template<typename T>
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
 public:
-	PMDRenderer(Dx12Wrapper& dx12);
-	~PMDRenderer();
+	Renderer(Graphics& graphics);
+	~Renderer();
 	ID3D12PipelineState* GetPipelineState();
 	ID3D12RootSignature* GetRootSignature();
 private:
-	Dx12Wrapper& _wrapper;
+	Graphics& _wrapper;
 
 	ComPtr< ID3D12PipelineState> _pipeline = nullptr;//PMD用パイプライン
 	ComPtr< ID3D12RootSignature> _rootSignature = nullptr;//PMD用ルートシグネチャ

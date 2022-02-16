@@ -1,19 +1,31 @@
-#pragma once
-#include<d3d12.h>
-#include<dxgi1_6.h>
-#include<map>
-#include<DirectXTex.h>
-#include<wrl.h>
-#include<string>
-#include<functional>
+/*--------------------------------------------------------------
 
-class Dx12Wrapper
+	[Graphics.h]
+	Author : èoçá„ƒëæ
+
+---------------------------------------------------------------*/
+/*--------------------------------------------------------------
+
+	[Graphics.h]
+	Author : èoçá„ƒëæ
+
+---------------------------------------------------------------*/
+#pragma once
+#include <d3d12.h>
+#include <dxgi1_6.h>
+#include <map>
+#include <DirectXTex.h>
+#include <wrl.h>
+#include <string>
+#include <functional>
+
+class Graphics
 {
 	template<typename T>
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
 public:
-	Dx12Wrapper(HWND hwnd);
-	~Dx12Wrapper();
+	Graphics(HWND hwnd);
+	~Graphics();
 
 	void BeginDraw();
 	void SetScene();

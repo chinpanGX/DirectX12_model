@@ -1,7 +1,13 @@
-#include "Dx12Wrapper.h"
-#include<cassert>
-#include"d3dx12.h"
-#include"Application.h"
+/*--------------------------------------------------------------
+
+	[Graphics.cpp]
+	Author : 出合翔太
+
+---------------------------------------------------------------*/
+#include "Graphics.h"
+#include <cassert>
+#include "d3dx12.h"
+#include "Application.h"
 #include <DirectXMath.h>
 
 #pragma comment(lib,"DirectXTex.lib")
@@ -89,7 +95,7 @@ namespace
 	}
 }
 
-Dx12Wrapper::Dx12Wrapper(HWND hwnd) 
+Graphics::Graphics(HWND hwnd) 
 {
 #ifdef _DEBUG
 	//デバッグレイヤーをオンに
@@ -145,11 +151,11 @@ Dx12Wrapper::Dx12Wrapper(HWND hwnd)
 
 }
 
-Dx12Wrapper::~Dx12Wrapper()
+Graphics::~Graphics()
 {
 }
 
-void Dx12Wrapper::BeginDraw() {
+void Graphics::BeginDraw() {
 	
 	//DirectX処理
 	//バックバッファのインデックスを取得
@@ -166,7 +172,7 @@ void Dx12Wrapper::BeginDraw() {
 	_cmdList->ClearDepthStencilView(dsvH, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 	
 	//画面クリア
-	float clearColor[] = { 0.5f,0.5f,0.5f,1.0f };//白色
+	float clearColor[] = { 0.0f,0.5f, 1.0f,1.0f };//白色
 	_cmdList->ClearRenderTargetView(rtvH, clearColor, 0, nullptr);
 
 	//ビューポート、シザー矩形のセット
@@ -174,7 +180,7 @@ void Dx12Wrapper::BeginDraw() {
 	_cmdList->RSSetScissorRects(1, _scissorrect.get());
 }
 
-void Dx12Wrapper::SetScene() 
+void Graphics::SetScene() 
 {
 	//現在のシーン(ビュープロジェクション)をセット
 	ID3D12DescriptorHeap* sceneheaps[] = { _sceneDescHeap.Get() };
@@ -182,14 +188,14 @@ void Dx12Wrapper::SetScene()
 	_cmdList->SetGraphicsRootDescriptorTable(0, _sceneDescHeap->GetGPUDescriptorHandleForHeapStart());
 }
 
-void Dx12Wrapper::EndDraw() 
+void Graphics::EndDraw() 
 {
 	auto bbIdx = _swapchain->GetCurrentBackBufferIndex();
 	_cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(_backBuffers[bbIdx], D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 	ExecuteCommand();
 }
 
-void Dx12Wrapper::ExecuteCommand()
+void Graphics::ExecuteCommand()
 {
 	//命令のクローズ
 	_cmdList->Close();
@@ -210,7 +216,7 @@ void Dx12Wrapper::ExecuteCommand()
 	_cmdList->Reset(_cmdAllocator.Get(), nullptr);//再びコマンドリストをためる準備
 }
 
-ComPtr<ID3D12Resource> Dx12Wrapper::GetTextureByPath(const char* texpath)
+ComPtr<ID3D12Resource> Graphics::GetTextureByPath(const char* texpath)
 {
 	auto it = _textureTable.find(texpath);
 	if (it != _textureTable.end())
@@ -225,23 +231,23 @@ ComPtr<ID3D12Resource> Dx12Wrapper::GetTextureByPath(const char* texpath)
 	}
 
 }
-ComPtr<ID3D12Device> Dx12Wrapper::Device() 
+ComPtr<ID3D12Device> Graphics::Device() 
 {
 	return _dev;
 }
 
-ComPtr<ID3D12GraphicsCommandList> Dx12Wrapper::CommandList() 
+ComPtr<ID3D12GraphicsCommandList> Graphics::CommandList() 
 {
 	return _cmdList;
 }
 
-ComPtr<IDXGISwapChain4> Dx12Wrapper::Swapchain() 
+ComPtr<IDXGISwapChain4> Graphics::Swapchain() 
 {
 	return _swapchain;
 }
 
 
-HRESULT Dx12Wrapper::CreateFinalRenderTargets() 
+HRESULT Graphics::CreateFinalRenderTargets() 
 {
 	DXGI_SWAP_CHAIN_DESC1 desc = {};
 	auto result = _swapchain->GetDesc1(&desc);
@@ -283,7 +289,7 @@ HRESULT Dx12Wrapper::CreateFinalRenderTargets()
 }
 
 
-HRESULT Dx12Wrapper::CreateDepthStencilView() 
+HRESULT Graphics::CreateDepthStencilView() 
 {
 	DXGI_SWAP_CHAIN_DESC1 desc = {};
 	auto result = _swapchain->GetDesc1(&desc);
@@ -337,7 +343,7 @@ HRESULT Dx12Wrapper::CreateDepthStencilView()
 }
 
 
-HRESULT Dx12Wrapper::InitDXGIDevice() 
+HRESULT Graphics::InitDXGIDevice() 
 {
 	UINT flagsDXGI = 0;
 	flagsDXGI |= DXGI_CREATE_FACTORY_DEBUG;
@@ -388,7 +394,7 @@ HRESULT Dx12Wrapper::InitDXGIDevice()
 }
 
 ///スワップチェイン生成関数
-HRESULT Dx12Wrapper::CreateSwapChain(const HWND& hwnd) 
+HRESULT Graphics::CreateSwapChain(const HWND& hwnd) 
 {
 	RECT rc = {};
 	::GetWindowRect(hwnd, &rc);
@@ -413,7 +419,7 @@ HRESULT Dx12Wrapper::CreateSwapChain(const HWND& hwnd)
 }
 
 //コマンドまわり初期化
-HRESULT Dx12Wrapper::InitCommand() 
+HRESULT Graphics::InitCommand() 
 {
 	auto result = _dev->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(_cmdAllocator.ReleaseAndGetAddressOf()));
 	if (FAILED(result)) 
@@ -439,7 +445,7 @@ HRESULT Dx12Wrapper::InitCommand()
 }
 
 //ビュープロジェクション用ビューの生成
-HRESULT Dx12Wrapper::CreateSceneView() 
+HRESULT Graphics::CreateSceneView() 
 {
 	DXGI_SWAP_CHAIN_DESC1 desc = {};
 	auto result = _swapchain->GetDesc1(&desc);
@@ -484,7 +490,7 @@ HRESULT Dx12Wrapper::CreateSceneView()
 }
 
 //テクスチャローダテーブルの作成
-void Dx12Wrapper::CreateTextureLoaderTable() 
+void Graphics::CreateTextureLoaderTable() 
 {
 	_loadLambdaTable["sph"] = _loadLambdaTable["spa"] = _loadLambdaTable["bmp"] = _loadLambdaTable["png"] = _loadLambdaTable["jpg"] =
 		[](const wstring& path, TexMetadata* meta, ScratchImage& img)->HRESULT {return LoadFromWICFile(path.c_str(), WIC_FLAGS::WIC_FLAGS_NONE, meta, img); };
@@ -495,7 +501,7 @@ void Dx12Wrapper::CreateTextureLoaderTable()
 }
 
 //テクスチャ名からテクスチャバッファ作成、中身をコピー
-ID3D12Resource* Dx12Wrapper::CreateTextureFromFile(const char* texpath) 
+ID3D12Resource* Graphics::CreateTextureFromFile(const char* texpath) 
 {
 	string texPath = texpath;
 	//テクスチャのロード

@@ -1,12 +1,17 @@
+/*--------------------------------------------------------------
+	
+	[Application.cpp]
+	Author : 出合翔太
+
+---------------------------------------------------------------*/
 #include "Application.h"
-#include"Dx12Wrapper.h"
-#include"PMDRenderer.h"
-#include"PMDActor.h"
+#include"Graphics.h"
+#include"Renderer.h"
+#include"Actor.h"
 
 //ウィンドウ定数
-const unsigned int window_width = 1280;
-const unsigned int window_height = 720;
-
+const unsigned int window_width = 1920;
+const unsigned int window_height = 1080;
 
 LRESULT WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) 
 {
@@ -35,13 +40,13 @@ bool Application::Begin()
 	CreateGameWindow(_hwnd, _windowClass);
 
 	//DirectX12ラッパー生成＆初期化
-	_wrapper.reset(new Dx12Wrapper(_hwnd));
-	_pmdRenderer.reset(new PMDRenderer(*_wrapper));
-	_pmdActor.reset(new PMDActor("Model/初音ミク.pmd", *_pmdRenderer));
-	//_pmdActor->LoadVMDFile("motion/ヤゴコロダンス.vmd", "pose");
-	_pmdActor->LoadVMDFile("motion/2分ループステップ5.vmd", "pose");
+	_wrapper.reset(new Graphics(_hwnd));
+	_renderer.reset(new Renderer(*_wrapper));
+	_actor.reset(new Actor("Model/初音ミク.pmd", *_renderer));
+	//_actor->LoadVMDFile("motion/ヤゴコロダンス.vmd", "pose");
+	_actor->LoadVMDFile("motion/2分ループステップ5.vmd", "pose");
 	_wrapper->ExecuteCommand();
-	_pmdActor->PlayAnimation();
+	_actor->PlayAnimation();
 	return true;
 }
 
@@ -65,16 +70,16 @@ void Application::Tick()
 		_wrapper->BeginDraw();
 
 		//PMD用の描画パイプラインに合わせる
-		_wrapper->CommandList()->SetPipelineState(_pmdRenderer->GetPipelineState());
+		_wrapper->CommandList()->SetPipelineState(_renderer->GetPipelineState());
 		//ルートシグネチャもPMD用に合わせる
-		_wrapper->CommandList()->SetGraphicsRootSignature(_pmdRenderer->GetRootSignature());
+		_wrapper->CommandList()->SetGraphicsRootSignature(_renderer->GetRootSignature());
 
 		_wrapper->CommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		
 		_wrapper->SetScene();
 		
-		_pmdActor->Update();
-		_pmdActor->Draw();
+		_actor->Update();
+		_actor->Draw();
 
 		_wrapper->EndDraw();
 

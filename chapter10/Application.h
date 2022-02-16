@@ -1,20 +1,26 @@
-#pragma once
-#include<Windows.h>
-#include<tchar.h>
-#include<d3d12.h>
-#include<dxgi1_6.h>
-#include<DirectXMath.h>
-#include<vector>
-#include<map>
-#include<d3dcompiler.h>
-#include<DirectXTex.h>
-#include"d3dx12.h"
-#include<wrl.h>
-#include<memory>
+/*--------------------------------------------------------------
+	
+	[Application.h]
+	Author : 出合翔太
 
-class Dx12Wrapper;
-class PMDRenderer;
-class PMDActor;
+---------------------------------------------------------------*/
+#pragma once
+#include <Windows.h>
+#include <tchar.h>
+#include <d3d12.h>
+#include <dxgi1_6.h>
+#include <DirectXMath.h>
+#include <vector>
+#include <map>
+#include <d3dcompiler.h>
+#include <DirectXTex.h>
+#include "d3dx12.h"
+#include <wrl.h>
+#include <memory>
+
+class Graphics;
+class Renderer;
+class Actor;
 ///シングルトンクラス
 class Application
 {
@@ -35,9 +41,9 @@ private:
 	//ウィンドウ周り
 	WNDCLASSEX _windowClass;
 	HWND _hwnd;
-	std::shared_ptr<Dx12Wrapper> _wrapper;
-	std::shared_ptr<PMDRenderer> _pmdRenderer;
-	std::shared_ptr<PMDActor> _pmdActor;
+	std::shared_ptr<Graphics> _wrapper;
+	std::shared_ptr<Renderer> _renderer;
+	std::shared_ptr<Actor> _actor;
 
 	//ゲーム用ウィンドウの生成
 	void CreateGameWindow(HWND &hwnd, WNDCLASSEX &windowClass);

@@ -1,33 +1,38 @@
+/*---------------------------------------------------------------
+
+	[Actor.h]
+	Author : 出合翔太
+
+----------------------------------------------------------------*/
 #pragma once
+#include <d3d12.h>
+#include <DirectXMath.h>
+#include <vector>
+#include <map>
+#include <unordered_map>
+#include <wrl.h>
 
-#include<d3d12.h>
-#include<DirectXMath.h>
-#include<vector>
-#include<map>
-#include<unordered_map>
-#include<wrl.h>
-
-class Dx12Wrapper;
-class PMDRenderer;
-class PMDActor
+class Graphics;
+class Renderer;
+class Actor
 {
-	friend PMDRenderer;
+	friend Renderer;
 
 	template<typename T>
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
 public:
-	PMDActor(const char* filepath, PMDRenderer& renderer);
-	~PMDActor();
+	Actor(const char* filepath, Renderer& renderer);
+	~Actor();
 	///クローンは頂点およびマテリアルは共通のバッファを見るようにする
-	PMDActor* Clone();
+	Actor* Clone();
 	void LoadVMDFile(const char* filepath, const char* name);
 	void Update();
 	void Draw();
 	void PlayAnimation();
 
 private:
-	PMDRenderer& _renderer;
-	Dx12Wrapper& _wrapper;
+	Renderer& _renderer;
+	Graphics& _wrapper;
 	
 	//頂点関連
 	ComPtr<ID3D12Resource> _vb = nullptr;
